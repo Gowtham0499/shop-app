@@ -6,6 +6,7 @@ import '../widgets/badge.dart';
 import '../widgets/app_drawer.dart';
 
 import '../providers/cart_item_provider.dart';
+import '../providers/products_provider.dart';
 
 import '../screens/cart_screen.dart';
 
@@ -21,6 +22,33 @@ class ProductsOverview extends StatefulWidget {
 
 class _ProductsOverviewState extends State<ProductsOverview> {
   var _showOnlyFavourites = false;
+  var _isInit = true;
+  var _isLoading = false;
+
+  @override
+  void initState() {
+    // Provider.of<ProductsProvider>(context).fetchAndSetProducts(); // "of(context)" wont work inside initState()
+    // Future.delayed(Duration.zero).then((_) => {
+    //   Provider.of<ProductsProvider>(context).fetchAndSetProducts();
+    // }); // Kinda hack
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      setState(() {
+        _isLoading = true;
+      });
+      Provider.of<ProductsProvider>(context, listen: false).fetchAndSetProducts().then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+      });
+    }
+    _isInit = false;
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +96,11 @@ class _ProductsOverviewState extends State<ProductsOverview> {
         ],
       ),
       drawer: AppDrawer(),
-      body: ProductsGrid(_showOnlyFavourites),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : ProductsGrid(_showOnlyFavourites),
     );
   }
 }

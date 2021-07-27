@@ -28,6 +28,7 @@ class ProductDetails extends StatelessWidget {
         child: Column(
           children: <Widget>[
             Container(
+              margin: EdgeInsets.all(8),
               height: 300,
               width: double.infinity,
               child: Image.network(

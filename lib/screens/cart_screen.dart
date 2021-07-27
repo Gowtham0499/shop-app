@@ -40,19 +40,7 @@ class CartScreen extends StatelessWidget {
                     ),
                     backgroundColor: Theme.of(context).primaryColor,
                   ),
-                  TextButton(
-                    child: Text('Order Now'),
-                    onPressed: () {
-                      Provider.of<OrderItemProvider>(context, listen: false)
-                          .addOrder(
-                        cartItemProvider.cartItems.values.toList(),
-                        cartItemProvider.totalAmount,
-                      );
-                      cartItemProvider.clearCartItems();
-                    },
-                    style: TextButton.styleFrom(
-                        primary: Theme.of(context).primaryColor),
-                  ),
+                  OrderButton(cartItemProvider: cartItemProvider),
                 ],
               ),
             ),
@@ -74,6 +62,44 @@ class CartScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class OrderButton extends StatefulWidget {
+  const OrderButton({
+    Key? key,
+    required this.cartItemProvider,
+  }) : super(key: key);
+
+  final CartItemProvider cartItemProvider;
+
+  @override
+  _OrderButtonState createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  var _isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      child: _isLoading ? Center(child: CircularProgressIndicator(),) : Text('Order Now'),
+      onPressed: (widget.cartItemProvider.totalAmount <= 0 || _isLoading) ? null : () async {
+        setState(() {
+          _isLoading = true;
+        });
+        await Provider.of<OrderItemProvider>(context, listen: false)
+            .addOrder(
+          widget.cartItemProvider.cartItems.values.toList(),
+          widget.cartItemProvider.totalAmount,
+        );
+        setState(() {
+          _isLoading = false;
+        });
+        widget.cartItemProvider.clearCartItems();
+      },
+      style: TextButton.styleFrom(
+          primary: Theme.of(context).primaryColor),
     );
   }
 }
